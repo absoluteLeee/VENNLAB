@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENNLAB</title>
+<style>
+  @font-face { font-family: 'Venn DejaVu'; src: url('fonts/DejaVuSans.ttf') format('truetype'); font-weight: 100 599; }
+  @font-face { font-family: 'Venn DejaVu'; src: url('fonts/DejaVuSans-Bold.ttf') format('truetype'); font-weight: 600 900; }
+
+@font-face { font-family: 'Venn Source Han Sans'; src: url('fonts/SourceHanSansCN-Regular.otf') format('opentype'); font-weight: 100 599; font-style: normal; font-display: swap; unicode-range: U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF, U+20000-2FA1F; }
+  @font-face { font-family: 'Venn Source Han Sans'; src: url('fonts/SourceHanSansCN-Bold.otf') format('opentype'); font-weight: 600 900; font-style: normal; font-display: swap; unicode-range: U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF, U+20000-2FA1F; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Venn Source Han Sans', Arial, 'Venn DejaVu', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  @font-face { font-family: 'Venn Josefin Sans'; src: url('fonts/JosefinSans-Bold.ttf') format('truetype'); font-weight: 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Venn Jost'; src: url('fonts/Jost-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+  header { background: #283E8C; color: #fff; height: 84px; flex-shrink: 0; padding: 0 36px; display: flex; align-items: center; text-align: left; }
+  header h1 { display: flex; align-items: center; gap: 12px; font-family: 'Venn Josefin Sans', sans-serif; font-size: 21px; font-weight: 700; letter-spacing: 2.5px; line-height: 1.65; }
+  header .brand-bal { font-family: 'Venn Jost', sans-serif; font-weight: 400; font-synthesis: none; color: #E8E8E8; }
+  header .brand-mirror { display: inline-block; transform: scaleX(-1); }
+  header .brand-logo { display: inline-block; position: relative; width: 34px; aspect-ratio: 706 / 1140; overflow: hidden; flex-shrink: 0; margin-left: 18px; transform: translateY(4px); }
+  header .brand-logo img { position: absolute; width: 200.7082%; max-width: none; height: auto; left: -46.6006%; top: -10.9649%; }
+  @media (max-width: 600px) { header .brand-logo { width: 28px; margin-left: 12px; transform: translateY(3px); } }
+  header .brand-caption { color: #E8E8E8; font-size: 9px; letter-spacing: 2.8px; margin-top: 1px; line-height: 1.65; }
+  @media (max-width: 600px) { header .brand-caption { font-size: 7px; letter-spacing: 1.6px; } }
+  @media (max-width: 600px) { header { height: 76px; padding: 0 18px; } header h1 { font-size: 16px; letter-spacing: 1.5px; gap: 8px; } }
+
+  .container { display: flex; flex: 1; gap: 24px; padding: 24px; max-width: 1200px; margin: 0 auto; width: 100%; }
+  .panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  }
+  .controls { width: 380px; min-width: 380px; display: flex; flex-direction: column; gap: 16px; }
+  .diagram-area { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 500px; }
+
+  .set-group { display: flex; flex-direction: column; gap: 2px; }
+  .set-group label { font-size: 13px; font-weight: 600; color: #555; }
+  .set-row { display: flex; gap: 8px; align-items: start; }
+  .set-row input[type="text"] {
+    flex: 1; padding: 6px 10px; border: 2px solid #e0e0e0; border-radius: 6px;
+    font-size: 13px; outline: none; transition: border-color .2s;
+  }
+  .set-row input[type="text"]:focus { border-color: #667eea; }
+  .set-row input[type="color"] { width: 32px; height: 32px; border: none; border-radius: 6px; cursor: pointer; padding: 0; }
+  .fs-label { font-size: 11px; color: #999; display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+  .fs-label input { width: 44px; padding: 3px 4px; border: 2px solid #e0e0e0; border-radius: 4px; font-size: 11px; outline: none; text-align: center; }
+
+  textarea {
+    width: 100%; min-height: 60px; padding: 8px 10px;
+    border: 2px solid #e0e0e0; border-radius: 6px;
+    font-size: 13px; font-family: inherit; resize: vertical;
+    outline: none; transition: border-color .2s; line-height: 1.5;
+  }
+  textarea:focus { border-color: #667eea; }
+  textarea::placeholder { color: #bbb; }
+
+  .region-output {
+    font-size: 12px;
+    background: #f8f9fc;
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .region-output table { width: 100%; border-collapse: collapse; }
+  .region-output th {
+    text-align: left; padding: 3px 6px; font-weight: 600;
+    border-bottom: 1px solid #e0e0e0; font-size: 11px; color: #888;
+  }
+  .region-output td { padding: 3px 6px; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+  .region-output .count { color: #888; font-size: 11px; }
+
+  .set-color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+  .stats-bar {
+    display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+    padding: 8px 12px; background: #f8f9fc; border-radius: 8px; font-size: 13px;
+  }
+  .stats-bar span { color: #666; }
+  .stats-bar strong { color: #1a1a2e; }
+
+  #venn-svg { width: 100%; height: 100%; max-width: 500px; max-height: 500px; }
+
+  .venn-label {
+    font-weight: 600;
+    user-select: none;
+  }
+
+  .venn-region { cursor: pointer; }
+  .venn-region:hover text { fill: #667eea; }
+
+  #click-result { min-height: 80px; font-size: 12px; }
+
+  .action-bar { display: flex; gap: 8px; align-items: stretch; }
+  .action-bar button {
+    padding: 8px 16px; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s;
+  }
+  .btn-primary {
+    background: #DA7ABB; color: #fff; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 500;
+  }
+  .btn-primary:hover { background: #C45AA3; }
+  .btn-secondary {
+    background: #f0f0f0; color: #555;
+  }
+  .btn-secondary:hover { background: #e4e4e4; }
+
+  .export-group { position: relative; }
+  .export-group .btn-primary { border-radius: 8px 0 0 8px; }
+  .export-dropdown-btn {
+    padding: 8px 8px; border: none; border-radius: 8px;
+    background: #C45AA3; color: #fff; cursor: pointer; font-size: 10px;
+    transition: all .2s;
+  }
+  .export-dropdown-btn:hover { background: #B04E92; }
+  .export-menu {
+    position: absolute; top: 100%; left: 0; margin-top: 4px;
+    background: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    z-index: 10; display: none; overflow: hidden;
+  }
+  .export-menu.show { display: block; }
+  .export-menu button {
+    display: block; width: 100%; padding: 10px 20px; border: none;
+    background: none; text-align: left; cursor: pointer; font-size: 13px; color: #333;
+    white-space: nowrap;
+  }
+  .export-menu button:hover { background: #f0f2ff; }
+
+  .saved-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; margin-top: 4px;
+    background: #f8f9fc; border-radius: 6px; font-size: 12px;
+    cursor: pointer; transition: background .15s;
+  }
+  .saved-item:hover { background: #eef0ff; }
+  .saved-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .saved-item .time { color: #aaa; font-size: 11px; white-space: nowrap; }
+  .saved-item .del {
+    color: #ccc; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px;
+  }
+  .saved-item .del:hover { color: #e74c3c; }
+
+  @media (max-width: 800px) {
+    .container { flex-direction: column; }
+    .controls { width: 100%; min-width: 0; }
+    .diagram-area { min-height: 350px; }
+  }
+
+  /* Main workspace aligned with ENRICH LAB. */
+  body { background: #FDFBF7; color: #222222; line-height: 1.65; }
+  button, input, textarea, select { font-family: inherit; }
+  .container { max-width: 1440px; padding: 32px 36px; gap: 24px; align-items: flex-start; }
+  .panel { background: #fff; border: 2px solid #1A1A1A; border-radius: 12px; box-shadow: none; }
+  .controls { width: 430px; min-width: 0; flex: 0 0 430px; gap: 12px; padding: 22px; }
+  .section-title { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 700; line-height: 1.4; }
+  .section-title span { font-size: 12px; font-weight: 400; color: #555555; letter-spacing: 1px; }
+  .section-desc { color: #555555; font-size: 12px; margin: -4px 0 4px; }
+  .section-divider { border-top: 1px solid #E5E5E5; padding-top: 18px; margin-top: 6px; }
+  .set-group { gap: 8px; padding: 12px; border: 1px solid #E5E5E5; border-radius: 8px; background: #fff; }
+  .set-row { flex-wrap: wrap; }
+  .set-row input[type=text] { min-width: 100px; width: 100%; }
+  textarea { min-height: 88px; background: #fff; border: 1px solid #E5E5E5; color: #222; border-radius: 6px; }
+  .set-row input[type=text] { border: 1px solid #E5E5E5; min-height: 36px; }
+  textarea:focus, .set-row input[type=text]:focus { border-color: #555; outline: 1px solid #555; }
+  input[type=radio], input[type=checkbox] { accent-color: #222; }
+  .stats-bar, .region-output, .saved-item { background: #F7F7F7; border: 1px solid #E5E5E5; border-radius: 6px; }
+  .region-output { padding: 0; }
+  .region-output th { background: #E8E8E8; color: #222; padding: 8px 10px; }
+  .region-output td { padding: 8px 10px; border-bottom: 1px solid #E5E5E5; }
+  .btn-primary, .export-dropdown-btn { background: #D82E2F; color: #fff; border: none; }
+  .btn-primary:hover, .export-dropdown-btn:hover { background: #B82425; }
+  .btn-secondary { background: #fff; color: #D82E2F; border: 1px solid #E5E5E5 !important; }
+  .btn-secondary:hover, .export-menu button:hover, .saved-item:hover { background: #E8E8E8; }
+  .diagram-area { min-width: 0; min-height: 600px; position: sticky !important; top: 24px; justify-content: flex-start; }
+  .preview-title { align-self: stretch; padding-right: 100px; margin-bottom: 20px; }
+  .diagram-area .export-group { top: 22px !important; right: 22px !important; }
+  #click-result { background: #fff; min-height: 90px; }
+  @media (max-width: 1000px) { .container { padding: 24px; gap: 18px; } .controls { flex-basis: 380px; width: 380px; } }
+  @media (max-width: 800px) { .container { flex-direction: column; padding: 20px; } .controls { width: 100%; flex-basis: auto; } .diagram-area { width: 100%; position: static !important; min-height: 350px; } }
+  @media (max-width: 480px) { .container { padding: 16px; } .controls { padding: 16px; } }
+
+  /* Three-column workspace with a persistent brand header. */
+  header { position: sticky; top: 0; z-index: 100; }
+  .container { display: grid; grid-template-columns: minmax(240px, 300px) minmax(360px, 1fr) minmax(240px, 300px); max-width: 1680px; width: 100%; gap: 20px; padding: 28px 36px; align-items: start; }
+  .controls { width: auto; min-width: 0; padding: 20px; }
+  .set-row input[type=text] { min-width: 0; }
+  .controls textarea { min-height: 130px; }
+  .diagram-area { position: static !important; width: 100%; min-height: 580px; }
+  .plot-settings { display: flex; flex-direction: column; gap: 18px; padding: 20px; min-width: 0; }
+  .color-control { display: flex; flex-direction: column; gap: 8px; padding-bottom: 14px; border-bottom: 1px solid #E5E5E5; }
+  .color-control[hidden] { display: none; }
+  .color-control label { color: #555; font-size: 12px; }
+  .color-control > span { gap: 8px !important; }
+  .color-control input[type=color] { width: 42px; height: 30px; border: 0; background: transparent; }
+  .color-control input[type=range] { flex: 1; width: auto !important; }
+  .preview-results { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .preview-results .section-title { font-size: 16px; }
+  #layout-3-group { line-height: 2; }
+  @media (max-width: 1100px) { .container { padding: 20px; gap: 14px; grid-template-columns: minmax(210px, 250px) minmax(300px,1fr) minmax(210px,250px); } .controls, .plot-settings { padding: 16px; } }
+  @media (max-width: 900px) { .container { grid-template-columns: minmax(220px, 1fr) minmax(0, 1.5fr); } .plot-settings { grid-column: 1; grid-row: 2; } .diagram-area { grid-column: 2; grid-row: 1 / span 2; } }
+  @media (max-width: 600px) { .container { grid-template-columns: minmax(0,1fr); padding: 16px; } .plot-settings, .diagram-area { grid-column: auto; grid-row: auto; } }
+  .btn-primary.save-button, .btn-primary.save-button:hover,
+  #export-trigger, #export-trigger:hover { background: #711905; }
+  .export-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; width: 100%; padding: 12px 0; border-bottom: 1px solid #E5E5E5; }
+  .export-toolbar > span { font-size: 12px; color: #555; margin-right: 4px; }
+  .export-toolbar button { padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+  .diagram-area .preview-title { margin-bottom: 0; padding-right: 0; }
+  .panel { border-color: #283E8C; }
+  .container .diagram-area { position: relative !important; top: auto; }
+  .diagram-area .export-group { position: absolute; top: 20px !important; right: 20px !important; z-index: 10; }
+  .diagram-area .export-group > button { padding: 8px 14px; border-radius: 6px; cursor: pointer; }
+  .diagram-area .export-menu { left: auto; right: 0; min-width: 100px; border: 1px solid #E5E5E5; }
+  .diagram-area .preview-title { padding-right: 90px; margin-bottom: 12px; min-height: 36px; }
+
+  /* Unified button color. */
+  button, .btn-primary, .btn-secondary, .export-dropdown-btn,
+  .btn-primary.save-button, #export-trigger, .export-menu button,
+  button:hover, .btn-primary:hover, .btn-secondary:hover,
+  .export-dropdown-btn:hover, .btn-primary.save-button:hover,
+  #export-trigger:hover, .export-menu button:hover {
+    background: #F5D000;
+    color: #222222;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1><span>VENN<span class="brand-bal"><span class="brand-mirror">B</span>AL</span></span></h1>
+    <p class="brand-caption">GENE SET OVERLAP</p>
+  </div>
+  <span class="brand-logo"><img src="1.png" alt="VENNLAB logo"></span>
+</header>
+
+<div class="container">
+  <div class="panel controls">
+    <h2 class="section-title"><span>01 /</span> 数据输入</h2>
+    <p class="section-desc">设置集合名称，每行输入一个元素。</p>
+
+    <div style="display:flex;gap:12px;align-items:center;font-size:13px;color:#666;padding:2px 0">
+      <span style="font-weight:600;color:#555">模式:</span>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+        <input type="radio" name="mode" value="2" checked onchange="toggleMode()"> 2个集合
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+        <input type="radio" name="mode" value="3" onchange="toggleMode()"> 3个集合
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+        <input type="radio" name="mode" value="4" onchange="toggleMode()"> 4个集合
+      </label>
+    </div>
+
+    <div id="layout-3-group" style="display:none;font-size:13px;color:#666;margin:-6px 0;padding:2px 0">
+      <span style="font-weight:600;color:#555">布局:</span>
+      <label style="margin-left:8px;cursor:pointer">
+        <input type="radio" name="layout3" value="triangle" checked onchange="update()"> Mode1
+      </label>
+      <label style="margin-left:4px;cursor:pointer">
+        <input type="radio" name="layout3" value="inverted_full" onchange="update()"> Mode2
+      </label>
+      <label style="margin-left:4px;cursor:pointer">
+        <input type="radio" name="layout3" value="inverted" onchange="update()"> Mode3
+      </label>
+      <label style="margin-left:4px;cursor:pointer">
+        <input type="radio" name="layout3" value="triangle_separate" onchange="update()"> Mode4
+      </label>
+    </div>
+
+    <div class="set-group">
+      <div class="set-row">
+        <input type="text" id="name-a" value="集合 A" placeholder="集合名称" oninput="update()">
+        <span style="display:inline-flex;align-items:center;gap:2px">
+          <input type="color" id="color-a" value="#667eea" oninput="update()">
+          <input type="range" id="opa-a" min="0" max="1" step="0.05" value="0.75" oninput="document.getElementById('opa-lbl-a').textContent=Math.round(this.value*100)+'%';update()" style="width:40px;height:4px;cursor:pointer;accent-color:#667eea;padding:0;margin:0">
+          <span id="opa-lbl-a" style="font-size:10px;color:#999;min-width:22px;text-align:center">75%</span>
+        </span>
+      </div>
+      <textarea id="items-a" placeholder="每行一个元素&#10;如:苹果&#10;香蕉" oninput="update()"></textarea>
+    </div>
+
+    <div class="set-group">
+      <div class="set-row">
+        <input type="text" id="name-b" value="集合 B" placeholder="集合名称" oninput="update()">
+        <span style="display:inline-flex;align-items:center;gap:2px">
+          <input type="color" id="color-b" value="#f093fb" oninput="update()">
+          <input type="range" id="opa-b" min="0" max="1" step="0.05" value="0.75" oninput="document.getElementById('opa-lbl-b').textContent=Math.round(this.value*100)+'%';update()" style="width:40px;height:4px;cursor:pointer;accent-color:#f093fb;padding:0;margin:0">
+          <span id="opa-lbl-b" style="font-size:10px;color:#999;min-width:22px;text-align:center">75%</span>
+        </span>
+      </div>
+      <textarea id="items-b" placeholder="每行一个元素" oninput="update()"></textarea>
+    </div>
+
+    <div class="set-group" id="set-c-group" style="display:none">
+      <div class="set-row">
+        <input type="text" id="name-c" value="集合 C" placeholder="集合名称" oninput="update()">
+        <span style="display:inline-flex;align-items:center;gap:2px">
+          <input type="color" id="color-c" value="#4ecdc4" oninput="update()">
+          <input type="range" id="opa-c" min="0" max="1" step="0.05" value="0.75" oninput="document.getElementById('opa-lbl-c').textContent=Math.round(this.value*100)+'%';update()" style="width:40px;height:4px;cursor:pointer;accent-color:#4ecdc4;padding:0;margin:0">
+          <span id="opa-lbl-c" style="font-size:10px;color:#999;min-width:22px;text-align:center">75%</span>
+        </span>
+      </div>
+      <textarea id="items-c" placeholder="每行一个元素" oninput="update()"></textarea>
+    </div>
+
+    <div class="set-group" id="set-d-group" style="display:none">
+      <div class="set-row">
+        <input type="text" id="name-d" value="集合 D" placeholder="集合名称" oninput="update()">
+        <span style="display:inline-flex;align-items:center;gap:2px">
+          <input type="color" id="color-d" value="#ffa07a" oninput="update()">
+          <input type="range" id="opa-d" min="0" max="1" step="0.05" value="0.75" oninput="document.getElementById('opa-lbl-d').textContent=Math.round(this.value*100)+'%';update()" style="width:40px;height:4px;cursor:pointer;accent-color:#ffa07a;padding:0;margin:0">
+          <span id="opa-lbl-d" style="font-size:10px;color:#999;min-width:22px;text-align:center">75%</span>
+        </span>
+      </div>
+      <textarea id="items-d" placeholder="每行一个元素" oninput="update()"></textarea>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn-secondary" onclick="clearAll()">清空</button>
+    </div>
+
+    <h2 class="section-title section-divider"><span>02 /</span> 图表设置</h2>
+    <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:#666;padding:6px 4px;width:100%;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap">
+        <input type="checkbox" id="bg-enabled" checked onchange="update()"> 背景
+      </label>
+      <input type="color" id="bg-color" value="#ffffff" oninput="update()" style="flex:1;min-width:40px;max-width:60px;height:30px;padding:0;border:none;border-radius:4px;cursor:pointer">
+      <input type="range" id="bg-opacity" min="0" max="1" step="0.05" value="1" oninput="document.getElementById('bg-opacity-label').textContent=Math.round(this.value*100)+'%';update()" style="flex:1;min-width:50px;max-width:80px;height:4px;cursor:pointer;accent-color:#666">
+      <span id="bg-opacity-label" style="font-size:11px;color:#999;min-width:24px">100%</span>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;font-size:13px;color:#666;padding:2px 4px;width:100%;flex-wrap:wrap">
+      <label class="fs-label" style="display:flex;align-items:center;gap:3px;white-space:nowrap">标题字号 <input type="number" id="title-fs" value="16" min="8" max="48" oninput="update()" style="width:44px;padding:3px 4px;border:2px solid #e0e0e0;border-radius:4px;font-size:11px;outline:none;text-align:center"></label>
+      <label class="fs-label" style="display:flex;align-items:center;gap:3px;white-space:nowrap">数字字号 <input type="number" id="num-fs" value="14" min="8" max="48" oninput="update()" style="width:44px;padding:3px 4px;border:2px solid #e0e0e0;border-radius:4px;font-size:11px;outline:none;text-align:center"></label>
+      <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap">
+        <input type="checkbox" id="border-enabled" checked onchange="update()"> 白边
+      </label>
+    </div>
+
+    <h2 class="section-title section-divider"><span>03 /</span> 交集结果</h2>
+    <div class="stats-bar">
+      <span>总计: <strong id="total-items">0</strong> 个元素</span>
+    </div>
+
+    <div class="region-output">
+      <table>
+        <thead><tr><th>区域</th><th>元素</th></tr></thead>
+        <tbody id="region-tbody"></tbody>
+      </table>
+    </div>
+
+    <textarea id="click-result" placeholder="点击维恩图上的数字，此处显示对应元素，方便复制到 Excel" readonly></textarea>
+  </div>
+
+  <div class="panel diagram-area" style="flex-direction:column;gap:16px;padding:24px;position:relative">
+    <h2 class="section-title preview-title"><span>04 /</span> 可视化</h2>
+    <div class="export-group">
+      <button type="button" class="btn-primary" id="export-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="export-menu" onclick="toggleExportMenu(event)">导出 ▾</button>
+      <div class="export-menu" id="export-menu">
+        <button type="button" onclick="exportPNG()">PNG</button>
+        <button type="button" onclick="exportPDF()">PDF</button>
+        <button type="button" onclick="exportTIFF()">TIFF</button>
+        <button type="button" onclick="exportSVG()">SVG</button>
+      </div>
+    </div>
+    <svg id="venn-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:460px;align-self:center"></svg>
+    <div id="jvenn-container" style="width:100%;max-width:460px;align-self:center;display:none"></div>
+
+    <div style="display:flex;gap:8px;align-items:center;width:100%">
+      <input type="text" id="save-name" placeholder="保存名称..." style="flex:1;padding:6px 10px;border:2px solid #e0e0e0;border-radius:6px;font-size:13px;outline:none">
+      <button class="btn-primary save-button" onclick="saveEntry()" style="padding:6px 14px;white-space:nowrap">保存</button>
+    </div>
+    <div id="saved-list" style="width:100%;margin-top:-8px"></div>
+  </div>
+</div>
+
+<script>
+// Move existing controls without replacing their IDs or event handlers.
+{
+  const workspace=document.querySelector('.container');
+  const inputs=document.querySelector('.controls');
+  const preview=document.querySelector('.diagram-area');
+  const settings=document.createElement('aside');
+  settings.className='panel plot-settings';
+  settings.setAttribute('aria-label','图形与颜色设置');
+  settings.innerHTML='<h2 class="section-title"><span>03 /</span> 图形与颜色</h2><p class="section-desc">调整布局、集合颜色、透明度和文字。</p>';
+  workspace.append(settings);
+  const layout=document.getElementById('layout-3-group');
+  settings.append(layout);
+  for(const key of ['a','b','c','d']) {
+    const color=document.getElementById('color-'+key);
+    const row=document.createElement('div');row.className='color-control';row.id='color-control-'+key;
+    const label=document.createElement('label');label.htmlFor=color.id;label.textContent='集合 '+key.toUpperCase()+' · 颜色与透明度';
+    row.append(label,color.parentElement);settings.append(row);
+  }
+  const titles=inputs.querySelectorAll('.section-divider');
+  const settingsTitle=titles[0],resultsTitle=titles[1];
+  for(let node=settingsTitle.nextElementSibling;node&&node!==resultsTitle;){const next=node.nextElementSibling;settings.append(node);node=next;}
+  settingsTitle.remove();
+  const results=document.createElement('section');results.className='preview-results';
+  resultsTitle.innerHTML='交集结果';results.append(resultsTitle);
+  for(const id of ['total-items','region-tbody','click-result']) {
+    const node=document.getElementById(id);
+    results.append(id==='total-items'?node.closest('.stats-bar'):id==='region-tbody'?node.closest('.region-output'):node);
+  }
+  preview.append(results);
+  preview.querySelector('.preview-title').innerHTML='<span>02 /</span> 可视化';
+  const syncColors=()=>{
+    const mode=Number(document.querySelector('input[name="mode"]:checked').value);
+    document.getElementById('color-control-c').hidden=mode<3;
+    document.getElementById('color-control-d').hidden=mode<4;
+  };
+  inputs.addEventListener('change',syncColors);
+  new MutationObserver(syncColors).observe(document.getElementById('set-c-group'),{attributes:true,attributeFilter:['style']});
+  new MutationObserver(syncColors).observe(document.getElementById('set-d-group'),{attributes:true,attributeFilter:['style']});
+  syncColors();
+}
+</script>
+<script src="lib/jquery.min.js"></script>
+<script src="lib/canvas2svg.js"></script>
+<script src="lib/jvenn.min.js"></script>
+<script>
+const COLORS = ['#667eea', '#f093fb', '#4ecdc4', '#ffa07a'];
+const regionColors = {};
+
+function getData(id) {
+  return {
+    name: document.getElementById(`name-${id}`).value || `集合 ${id.toUpperCase()}`,
+    items: new Set(document.getElementById(`items-${id}`).value.split('\n').map(s => s.trim()).filter(Boolean)),
+    color: document.getElementById(`color-${id}`).value
+  };
+}
+
+function makeCircle(svg, cx, cy, r, fill, fillOpacity) {
+  const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  c.setAttribute('cx', cx);
+  c.setAttribute('cy', cy);
+  c.setAttribute('r', r);
+  c.setAttribute('fill', fill);
+  if (fillOpacity != null) c.setAttribute('fill-opacity', fillOpacity);
+  return c;
+}
+
+function makeEllipse(svg, cx, cy, rx, ry, fill, fillOpacity, rot) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+  e.setAttribute('cx', cx);
+  e.setAttribute('cy', cy);
+  e.setAttribute('rx', rx);
+  e.setAttribute('ry', ry);
+  if (rot) e.setAttribute('transform', `rotate(${rot}, ${cx}, ${cy})`);
+  e.setAttribute('fill', fill);
+  if (fillOpacity != null) e.setAttribute('fill-opacity', fillOpacity);
+  return e;
+}
+
+function drawBorders(svg, centers, r) {
+  if (!document.getElementById('border-enabled').checked) return;
+  centers.forEach(c => {
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', c.x);
+    circle.setAttribute('cy', c.y);
+    circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', '#fff');
+    circle.setAttribute('stroke-width', '3');
+    svg.appendChild(circle);
+  });
+}
+
+function drawEllipseBorders(svg, ellipses) {
+  if (!document.getElementById('border-enabled').checked) return;
+  ellipses.forEach(e => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+    el.setAttribute('cx', e.cx);
+    el.setAttribute('cy', e.cy);
+    el.setAttribute('rx', e.rx);
+    el.setAttribute('ry', e.ry);
+    if (e.rot) el.setAttribute('transform', `rotate(${e.rot}, ${e.cx}, ${e.cy})`);
+    el.setAttribute('fill', 'none');
+    el.setAttribute('stroke', '#fff');
+    el.setAttribute('stroke-width', '3');
+    svg.appendChild(el);
+  });
+}
+
+function makeText(svg, x, y, text, cls, anchor, fontSize, fill) {
+  const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  t.setAttribute('x', x);
+  t.setAttribute('y', y);
+  t.setAttribute('text-anchor', anchor || 'middle');
+  t.setAttribute('dominant-baseline', 'middle');
+  t.setAttribute('class', cls || 'venn-label');
+  if (fontSize) t.setAttribute('font-size', fontSize);
+  if (fill) t.setAttribute('fill', fill);
+  t.textContent = text;
+  return t;
+}
+
+function getMode() {
+  return parseInt(document.querySelector('input[name="mode"]:checked').value) || 2;
+}
+
+function draw() {
+  const mode = getMode();
+  if (mode === 2) draw2();
+  else if (mode === 4) draw4jvenn();
+  else draw3();
+}
+
+function draw2() {
+  const setA = getData('a');
+  const setB = getData('b');
+
+  const svg = document.getElementById('venn-svg');
+  svg.innerHTML = '';
+
+  const bgEnabled = document.getElementById('bg-enabled').checked;
+  const bgColor = document.getElementById('bg-color').value;
+  if (bgEnabled) {
+    const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bg.setAttribute('x', '0');
+    bg.setAttribute('y', '0');
+    bg.setAttribute('width', '500');
+    bg.setAttribute('height', '500');
+    bg.setAttribute('fill', bgColor);
+    bg.setAttribute('fill-opacity', document.getElementById('bg-opacity').value);
+    bg.setAttribute('rx', '8');
+    svg.appendChild(bg);
+  }
+
+  const R = 155;
+  const d = R * 1.2;
+  const centers = [
+    { x: 250 - d / 2, y: 250 },
+    { x: 250 + d / 2, y: 250 }
+  ];
+
+  svg.appendChild(makeCircle(svg, centers[0].x, centers[0].y, R, setA.color, document.getElementById('opa-a').value));
+  svg.appendChild(makeCircle(svg, centers[1].x, centers[1].y, R, setB.color, document.getElementById('opa-b').value));
+  drawBorders(svg, centers, R);
+
+  const titleFontSize = parseInt(document.getElementById('title-fs').value) || 16;
+  [setA, setB].forEach((set, i) => {
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', centers[i].x);
+    t.setAttribute('y', centers[i].y - R - 14);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', 'bottom');
+    t.setAttribute('font-size', titleFontSize);
+    t.setAttribute('font-weight', 'bold');
+    t.setAttribute('fill', '#333');
+    t.textContent = set.name;
+    svg.appendChild(t);
+  });
+
+  const allItems = new Set([...setA.items, ...setB.items]);
+  const regions = {};
+  allItems.forEach(item => {
+    const inA = setA.items.has(item);
+    const inB = setB.items.has(item);
+    const key = inA && inB ? 'both' : inA ? 'a' : inB ? 'b' : 'none';
+    if (!regions[key]) regions[key] = [];
+    regions[key].push(item);
+  });
+
+  const regionConfig = {
+    a: {
+      pos: { x: centers[0].x - R * 0.45, y: centers[0].y },
+      label: setA.name
+    },
+    b: {
+      pos: { x: centers[1].x + R * 0.45, y: centers[1].y },
+      label: setB.name
+    },
+    both: {
+      pos: { x: (centers[0].x + centers[1].x) / 2, y: centers[0].y },
+      label: `${setA.name} ∩ ${setB.name}`
+    }
+  };
+
+  Object.entries(regionConfig).forEach(([key, cfg]) => {
+    const items = regions[key] || [];
+    if (items.length === 0) {
+      let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, '0', 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+svg.appendChild(_nr);
+      return;
+    }
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'venn-region');
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = `${cfg.label} (${items.length}):\n${items.join('\n')}`;
+    g.appendChild(title);
+    let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, `${items.length}`, 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+g.appendChild(_nr);
+    g.addEventListener('click', () => {
+      let value = '';
+      if (key === 'both') {
+        value += 'Common elements in ';
+      } else {
+        value += 'Elements only in ';
+      }
+      value += cfg.label + ':\n';
+      items.forEach(item => { value += item + '\n'; });
+      document.getElementById('click-result').value = value;
+    });
+    svg.appendChild(g);
+  });
+
+  document.getElementById('total-items').textContent = allItems.size;
+
+  const tbody = document.getElementById('region-tbody');
+  tbody.innerHTML = '';
+  const regionOrder = [
+    { key: 'both', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setB.color}"></span>${setB.name}` },
+    { key: 'a', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} (仅)` },
+    { key: 'b', label: `<span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} (仅)` },
+    { key: 'none', label: '不属于任何集合' }
+  ];
+  regionOrder.forEach(({ key, label }) => {
+    const items = regions[key];
+    if (!items || items.length === 0) return;
+    addRegionRow(tbody, key, label, items.length, items);
+  });
+}
+
+function draw3() {
+  const layout = getLayout3();
+  if (layout === 'inverted') draw3_inverted();
+  else if (layout === 'inverted_full') draw3_inverted_full();
+  else if (layout === 'triangle_separate') draw3_triangle_separate();
+  else draw3_triangle();
+}
+
+function draw3_triangle() {
+  const setA = getData('a');
+  const setB = getData('b');
+  const setC = getData('c');
+
+  const svg = document.getElementById('venn-svg');
+  svg.innerHTML = '';
+
+  const bgEnabled = document.getElementById('bg-enabled').checked;
+  const bgColor = document.getElementById('bg-color').value;
+  if (bgEnabled) {
+    const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bg.setAttribute('x', '0');
+    bg.setAttribute('y', '0');
+    bg.setAttribute('width', '500');
+    bg.setAttribute('height', '500');
+    bg.setAttribute('fill', bgColor);
+    bg.setAttribute('fill-opacity', document.getElementById('bg-opacity').value);
+    bg.setAttribute('rx', '8');
+    svg.appendChild(bg);
+  }
+
+  const R = 128;
+  const centers = [
+    { x: 250, y: 176 },  // A - top
+    { x: 168, y: 310 },  // B - bottom-left
+    { x: 332, y: 310 }   // C - bottom-right
+  ];
+
+  // Draw circles
+  svg.appendChild(makeCircle(svg, centers[0].x, centers[0].y, R, setA.color, document.getElementById('opa-a').value));
+  svg.appendChild(makeCircle(svg, centers[1].x, centers[1].y, R, setB.color, document.getElementById('opa-b').value));
+  svg.appendChild(makeCircle(svg, centers[2].x, centers[2].y, R, setC.color, document.getElementById('opa-c').value));
+  drawBorders(svg, centers, R);
+
+  // Draw titles (A above; B, C below)
+  const sets = [setA, setB, setC];
+  const titleFontSize = parseInt(document.getElementById('title-fs').value) || 16;
+  sets.forEach((set, i) => {
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', centers[i].x);
+    t.setAttribute('y', i === 0 ? centers[i].y - R - 14 : centers[i].y + R + 24);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', i === 0 ? 'bottom' : 'top');
+    t.setAttribute('font-size', titleFontSize);
+    t.setAttribute('font-weight', 'bold');
+    t.setAttribute('fill', '#333');
+    t.textContent = set.name;
+    svg.appendChild(t);
+  });
+
+  // Compute regions
+  const allItems = new Set([...setA.items, ...setB.items, ...setC.items]);
+  const regions = {};
+  allItems.forEach(item => {
+    const inA = setA.items.has(item);
+    const inB = setB.items.has(item);
+    const inC = setC.items.has(item);
+    let key;
+    if (inA && inB && inC) key = 'abc';
+    else if (inA && inB) key = 'ab';
+    else if (inA && inC) key = 'ac';
+    else if (inB && inC) key = 'bc';
+    else if (inA) key = 'a';
+    else if (inB) key = 'b';
+    else if (inC) key = 'c';
+    else key = 'none';
+    if (!regions[key]) regions[key] = [];
+    regions[key].push(item);
+  });
+
+  // Position and render each region
+  const regionConfig = {
+    a: {
+      pos: { x: 250, y: 162 },
+      label: setA.name,
+      clickPrefix: 'Elements only in '
+    },
+    b: {
+      pos: { x: 128, y: 318 },
+      label: setB.name,
+      clickPrefix: 'Elements only in '
+    },
+    c: {
+      pos: { x: 372, y: 318 },
+      label: setC.name,
+      clickPrefix: 'Elements only in '
+    },
+    ab: {
+      pos: { x: 200, y: 238 },
+      label: `${setA.name} ∩ ${setB.name}`,
+      clickPrefix: 'Common elements in '
+    },
+    ac: {
+      pos: { x: 300, y: 238 },
+      label: `${setA.name} ∩ ${setC.name}`,
+      clickPrefix: 'Common elements in '
+    },
+    bc: {
+      pos: { x: 250, y: 328 },
+      label: `${setB.name} ∩ ${setC.name}`,
+      clickPrefix: 'Common elements in '
+    },
+    abc: {
+      pos: { x: 250, y: 264 },
+      label: `${setA.name} ∩ ${setB.name} ∩ ${setC.name}`,
+      clickPrefix: 'Common elements in '
+    }
+  };
+
+  Object.entries(regionConfig).forEach(([key, cfg]) => {
+    const items = regions[key] || [];
+    if (items.length === 0) {
+      let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, '0', 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+svg.appendChild(_nr);
+      return;
+    }
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'venn-region');
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = `${cfg.label} (${items.length}):\n${items.join('\n')}`;
+    g.appendChild(title);
+    let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, `${items.length}`, 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+g.appendChild(_nr);
+    g.addEventListener('click', () => {
+      let value = cfg.clickPrefix + cfg.label + ':\n';
+      items.forEach(item => { value += item + '\n'; });
+      document.getElementById('click-result').value = value;
+    });
+    svg.appendChild(g);
+  });
+
+  document.getElementById('total-items').textContent = allItems.size;
+
+  const tbody = document.getElementById('region-tbody');
+  tbody.innerHTML = '';
+  const regionOrder = [
+    { key: 'abc', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'ab', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setB.color}"></span>${setB.name}` },
+    { key: 'ac', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'bc', label: `<span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'a', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} (仅)` },
+    { key: 'b', label: `<span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} (仅)` },
+    { key: 'c', label: `<span class="set-color-dot" style="background:${setC.color}"></span>${setC.name} (仅)` },
+    { key: 'none', label: '不属于任何集合' }
+  ];
+  regionOrder.forEach(({ key, label }) => {
+    const items = regions[key];
+    if (!items || items.length === 0) return;
+    addRegionRow(tbody, key, label, items.length, items);
+  });
+}
+
+function draw3_inverted() {
+  const setA = getData('a');
+  const setB = getData('b');
+  const setC = getData('c');
+
+  const svg = document.getElementById('venn-svg');
+  svg.innerHTML = '';
+
+  const bgEnabled = document.getElementById('bg-enabled').checked;
+  const bgColor = document.getElementById('bg-color').value;
+  if (bgEnabled) {
+    const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bg.setAttribute('x', '0');
+    bg.setAttribute('y', '0');
+    bg.setAttribute('width', '500');
+    bg.setAttribute('height', '500');
+    bg.setAttribute('fill', bgColor);
+    bg.setAttribute('fill-opacity', document.getElementById('bg-opacity').value);
+    bg.setAttribute('rx', '8');
+    svg.appendChild(bg);
+  }
+
+  const R = 120;
+  const centers = [
+    { x: 130, y: 185 },  // A - top-left (tangent with B: 370-130=240=2R)
+    { x: 370, y: 185 },  // B - top-right (tangent with A)
+    { x: 250, y: 320 }   // C - bottom-center
+  ];
+
+  // Draw circles
+  svg.appendChild(makeCircle(svg, centers[0].x, centers[0].y, R, setA.color, document.getElementById('opa-a').value));
+  svg.appendChild(makeCircle(svg, centers[1].x, centers[1].y, R, setB.color, document.getElementById('opa-b').value));
+  svg.appendChild(makeCircle(svg, centers[2].x, centers[2].y, R, setC.color, document.getElementById('opa-c').value));
+  drawBorders(svg, centers, R);
+
+  // Draw titles (A, B above; C below)
+  const sets = [setA, setB, setC];
+  const titleFontSize = parseInt(document.getElementById('title-fs').value) || 16;
+  sets.forEach((set, i) => {
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', centers[i].x);
+    t.setAttribute('y', i === 2 ? centers[i].y + R + 24 : centers[i].y - R - 14);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', i === 2 ? 'top' : 'bottom');
+    t.setAttribute('font-size', titleFontSize);
+    t.setAttribute('font-weight', 'bold');
+    t.setAttribute('fill', '#333');
+    t.textContent = set.name;
+    svg.appendChild(t);
+  });
+
+  // Compute regions
+  const allItems = new Set([...setA.items, ...setB.items, ...setC.items]);
+  const regions = {};
+  allItems.forEach(item => {
+    const inA = setA.items.has(item);
+    const inB = setB.items.has(item);
+    const inC = setC.items.has(item);
+    let key;
+    if (inA && inB && inC) key = 'abc';
+    else if (inA && inB) key = 'ab';
+    else if (inA && inC) key = 'ac';
+    else if (inB && inC) key = 'bc';
+    else if (inA) key = 'a';
+    else if (inB) key = 'b';
+    else if (inC) key = 'c';
+    else key = 'none';
+    if (!regions[key]) regions[key] = [];
+    regions[key].push(item);
+  });
+
+  // Position and render each region
+  const regionConfig = {
+    a: {
+      pos: { x: 130, y: 170 },
+      label: setA.name,
+      clickPrefix: 'Elements only in '
+    },
+    b: {
+      pos: { x: 370, y: 170 },
+      label: setB.name,
+      clickPrefix: 'Elements only in '
+    },
+    c: {
+      pos: { x: 250, y: 348 },
+      label: setC.name,
+      clickPrefix: 'Elements only in '
+    },
+    ac: {
+      pos: { x: 190, y: 253 },
+      label: `${setA.name} ∩ ${setC.name}`,
+      clickPrefix: 'Common elements in '
+    },
+    bc: {
+      pos: { x: 310, y: 253 },
+      label: `${setB.name} ∩ ${setC.name}`,
+      clickPrefix: 'Common elements in '
+    }
+  };
+
+  Object.entries(regionConfig).forEach(([key, cfg]) => {
+    const items = regions[key] || [];
+    if (items.length === 0) {
+      let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, '0', 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+svg.appendChild(_nr);
+      return;
+    }
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'venn-region');
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = `${cfg.label} (${items.length}):\n${items.join('\n')}`;
+    g.appendChild(title);
+    let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, `${items.length}`, 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+g.appendChild(_nr);
+    g.addEventListener('click', () => {
+      let value = cfg.clickPrefix + cfg.label + ':\n';
+      items.forEach(item => { value += item + '\n'; });
+      document.getElementById('click-result').value = value;
+    });
+    svg.appendChild(g);
+  });
+
+  document.getElementById('total-items').textContent = allItems.size;
+
+  const tbody = document.getElementById('region-tbody');
+  tbody.innerHTML = '';
+  const regionOrder = [
+    { key: 'abc', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'ab', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setB.color}"></span>${setB.name}` },
+    { key: 'ac', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'bc', label: `<span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'a', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} (仅)` },
+    { key: 'b', label: `<span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} (仅)` },
+    { key: 'c', label: `<span class="set-color-dot" style="background:${setC.color}"></span>${setC.name} (仅)` },
+    { key: 'none', label: '不属于任何集合' }
+  ];
+  regionOrder.forEach(({ key, label }) => {
+    const items = regions[key];
+    if (!items || items.length === 0) return;
+    addRegionRow(tbody, key, label, items.length, items);
+  });
+}
+
+function draw3_inverted_full() {
+  const setA = getData('a');
+  const setB = getData('b');
+  const setC = getData('c');
+
+  const svg = document.getElementById('venn-svg');
+  svg.innerHTML = '';
+
+  const bgEnabled = document.getElementById('bg-enabled').checked;
+  const bgColor = document.getElementById('bg-color').value;
+  if (bgEnabled) {
+    const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bg.setAttribute('x', '0');
+    bg.setAttribute('y', '0');
+    bg.setAttribute('width', '500');
+    bg.setAttribute('height', '500');
+    bg.setAttribute('fill', bgColor);
+    bg.setAttribute('fill-opacity', document.getElementById('bg-opacity').value);
+    bg.setAttribute('rx', '8');
+    svg.appendChild(bg);
+  }
+
+  const R = 120;
+  const centers = [
+    { x: 160, y: 175 },  // A - top-left
+    { x: 340, y: 175 },  // B - top-right
+    { x: 250, y: 320 }   // C - bottom-center
+  ];
+
+  // Draw circles
+  svg.appendChild(makeCircle(svg, centers[0].x, centers[0].y, R, setA.color, document.getElementById('opa-a').value));
+  svg.appendChild(makeCircle(svg, centers[1].x, centers[1].y, R, setB.color, document.getElementById('opa-b').value));
+  svg.appendChild(makeCircle(svg, centers[2].x, centers[2].y, R, setC.color, document.getElementById('opa-c').value));
+  drawBorders(svg, centers, R);
+
+  // Draw titles (A, B above; C below)
+  const sets = [setA, setB, setC];
+  const titleFontSize = parseInt(document.getElementById('title-fs').value) || 16;
+  sets.forEach((set, i) => {
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', centers[i].x);
+    t.setAttribute('y', i === 2 ? centers[i].y + R + 24 : centers[i].y - R - 14);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', i === 2 ? 'top' : 'bottom');
+    t.setAttribute('font-size', titleFontSize);
+    t.setAttribute('font-weight', 'bold');
+    t.setAttribute('fill', '#333');
+    t.textContent = set.name;
+    svg.appendChild(t);
+  });
+
+  // Compute regions
+  const allItems = new Set([...setA.items, ...setB.items, ...setC.items]);
+  const regions = {};
+  allItems.forEach(item => {
+    const inA = setA.items.has(item);
+    const inB = setB.items.has(item);
+    const inC = setC.items.has(item);
+    let key;
+    if (inA && inB && inC) key = 'abc';
+    else if (inA && inB) key = 'ab';
+    else if (inA && inC) key = 'ac';
+    else if (inB && inC) key = 'bc';
+    else if (inA) key = 'a';
+    else if (inB) key = 'b';
+    else if (inC) key = 'c';
+    else key = 'none';
+    if (!regions[key]) regions[key] = [];
+    regions[key].push(item);
+  });
+
+  // Position and render each region
+  const regionConfig = {
+    a: {
+      pos: { x: 160, y: 160 },
+      label: setA.name,
+      clickPrefix: 'Elements only in '
+    },
+    b: {
+      pos: { x: 340, y: 160 },
+      label: setB.name,
+      clickPrefix: 'Elements only in '
+    },
+    c: {
+      pos: { x: 250, y: 358 },
+      label: setC.name,
+      clickPrefix: 'Elements only in '
+    },
+    ab: {
+      pos: { x: 250, y: 175 },
+      label: `${setA.name} ∩ ${setB.name}`,
+      clickPrefix: 'Common elements in '
+    },
+    ac: {
+      pos: { x: 205, y: 250 },
+      label: `${setA.name} ∩ ${setC.name}`,
+      clickPrefix: 'Common elements in '
+    },
+    bc: {
+      pos: { x: 295, y: 250 },
+      label: `${setB.name} ∩ ${setC.name}`,
+      clickPrefix: 'Common elements in '
+    },
+    abc: {
+      pos: { x: 250, y: 224 },
+      label: `${setA.name} ∩ ${setB.name} ∩ ${setC.name}`,
+      clickPrefix: 'Common elements in '
+    }
+  };
+
+  Object.entries(regionConfig).forEach(([key, cfg]) => {
+    const items = regions[key] || [];
+    if (items.length === 0) {
+      let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, '0', 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+svg.appendChild(_nr);
+      return;
+    }
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'venn-region');
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = `${cfg.label} (${items.length}):\n${items.join('\n')}`;
+    g.appendChild(title);
+    let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, `${items.length}`, 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+g.appendChild(_nr);
+    g.addEventListener('click', () => {
+      let value = cfg.clickPrefix + cfg.label + ':\n';
+      items.forEach(item => { value += item + '\n'; });
+      document.getElementById('click-result').value = value;
+    });
+    svg.appendChild(g);
+  });
+
+  document.getElementById('total-items').textContent = allItems.size;
+
+  const tbody = document.getElementById('region-tbody');
+  tbody.innerHTML = '';
+  const regionOrder = [
+    { key: 'abc', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'ab', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setB.color}"></span>${setB.name}` },
+    { key: 'ac', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'bc', label: `<span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'a', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} (仅)` },
+    { key: 'b', label: `<span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} (仅)` },
+    { key: 'c', label: `<span class="set-color-dot" style="background:${setC.color}"></span>${setC.name} (仅)` },
+    { key: 'none', label: '不属于任何集合' }
+  ];
+  regionOrder.forEach(({ key, label }) => {
+    const items = regions[key];
+    if (!items || items.length === 0) return;
+    addRegionRow(tbody, key, label, items.length, items);
+  });
+}
+
+function draw3_triangle_separate() {
+  const setA = getData('a');
+  const setB = getData('b');
+  const setC = getData('c');
+
+  const svg = document.getElementById('venn-svg');
+  svg.innerHTML = '';
+
+  const bgEnabled = document.getElementById('bg-enabled').checked;
+  const bgColor = document.getElementById('bg-color').value;
+  if (bgEnabled) {
+    const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bg.setAttribute('x', '0');
+    bg.setAttribute('y', '0');
+    bg.setAttribute('width', '500');
+    bg.setAttribute('height', '500');
+    bg.setAttribute('fill', bgColor);
+    bg.setAttribute('fill-opacity', document.getElementById('bg-opacity').value);
+    bg.setAttribute('rx', '8');
+    svg.appendChild(bg);
+  }
+
+  const R = 120;
+  const centers = [
+    { x: 250, y: 180 },  // A - top
+    { x: 130, y: 315 },  // B - bottom-left (separate from C)
+    { x: 370, y: 315 }   // C - bottom-right (separate from B)
+  ];
+
+  // Draw circles
+  svg.appendChild(makeCircle(svg, centers[0].x, centers[0].y, R, setA.color, document.getElementById('opa-a').value));
+  svg.appendChild(makeCircle(svg, centers[1].x, centers[1].y, R, setB.color, document.getElementById('opa-b').value));
+  svg.appendChild(makeCircle(svg, centers[2].x, centers[2].y, R, setC.color, document.getElementById('opa-c').value));
+  drawBorders(svg, centers, R);
+
+  // Draw titles (A above; B, C below)
+  const sets = [setA, setB, setC];
+  const titleFontSize = parseInt(document.getElementById('title-fs').value) || 16;
+  sets.forEach((set, i) => {
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', centers[i].x);
+    t.setAttribute('y', i === 0 ? centers[i].y - R - 14 : centers[i].y + R + 24);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', i === 0 ? 'bottom' : 'top');
+    t.setAttribute('font-size', titleFontSize);
+    t.setAttribute('font-weight', 'bold');
+    t.setAttribute('fill', '#333');
+    t.textContent = set.name;
+    svg.appendChild(t);
+  });
+
+  // Compute regions
+  const allItems = new Set([...setA.items, ...setB.items, ...setC.items]);
+  const regions = {};
+  allItems.forEach(item => {
+    const inA = setA.items.has(item);
+    const inB = setB.items.has(item);
+    const inC = setC.items.has(item);
+    let key;
+    if (inA && inB && inC) key = 'abc';
+    else if (inA && inB) key = 'ab';
+    else if (inA && inC) key = 'ac';
+    else if (inB && inC) key = 'bc';
+    else if (inA) key = 'a';
+    else if (inB) key = 'b';
+    else if (inC) key = 'c';
+    else key = 'none';
+    if (!regions[key]) regions[key] = [];
+    regions[key].push(item);
+  });
+
+  // Position and render each region
+  const regionConfig = {
+    a: {
+      pos: { x: 250, y: 162 },
+      label: setA.name,
+      clickPrefix: 'Elements only in '
+    },
+    b: {
+      pos: { x: 130, y: 330 },
+      label: setB.name,
+      clickPrefix: 'Elements only in '
+    },
+    c: {
+      pos: { x: 370, y: 330 },
+      label: setC.name,
+      clickPrefix: 'Elements only in '
+    },
+    ab: {
+      pos: { x: 190, y: 247 },
+      label: `${setA.name} ∩ ${setB.name}`,
+      clickPrefix: 'Common elements in '
+    },
+    ac: {
+      pos: { x: 310, y: 247 },
+      label: `${setA.name} ∩ ${setC.name}`,
+      clickPrefix: 'Common elements in '
+    }
+  };
+
+  Object.entries(regionConfig).forEach(([key, cfg]) => {
+    const items = regions[key] || [];
+    if (items.length === 0) {
+      let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, '0', 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+svg.appendChild(_nr);
+      return;
+    }
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'venn-region');
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = `${cfg.label} (${items.length}):\n${items.join('\n')}`;
+    g.appendChild(title);
+    let _nr = makeText(svg, cfg.pos.x, cfg.pos.y, `${items.length}`, 'venn-label', null, document.getElementById('num-fs').value, regionColors[key] || '#1a1a2e');
+_nr.setAttribute('data-region', key);
+g.appendChild(_nr);
+    g.addEventListener('click', () => {
+      let value = cfg.clickPrefix + cfg.label + ':\n';
+      items.forEach(item => { value += item + '\n'; });
+      document.getElementById('click-result').value = value;
+    });
+    svg.appendChild(g);
+  });
+
+  document.getElementById('total-items').textContent = allItems.size;
+
+  const tbody = document.getElementById('region-tbody');
+  tbody.innerHTML = '';
+  const regionOrder = [
+    { key: 'ab', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setB.color}"></span>${setB.name}` },
+    { key: 'ac', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} ∩ <span class="set-color-dot" style="background:${setC.color}"></span>${setC.name}` },
+    { key: 'a', label: `<span class="set-color-dot" style="background:${setA.color}"></span>${setA.name} (仅)` },
+    { key: 'b', label: `<span class="set-color-dot" style="background:${setB.color}"></span>${setB.name} (仅)` },
+    { key: 'c', label: `<span class="set-color-dot" style="background:${setC.color}"></span>${setC.name} (仅)` },
+    { key: 'none', label: '不属于任何集合' }
+  ];
+  regionOrder.forEach(({ key, label }) => {
+    const items = regions[key];
+    if (!items || items.length === 0) return;
+    addRegionRow(tbody, key, label, items.length, items);
+  });
+}
+
+function fourRegions(sets) {
+  const regions=Array.from({length:16},()=>[]);
+  const all=new Set(sets.flatMap(s=>Array.from(s.items)));
+  for(const item of all){let mask=0;sets.forEach((s,i)=>{if(s.items.has(item))mask|=1<<i;});regions[mask].push(item);}
+  return {regions,total:all.size};
+}
+function draw4jvenn() {
+  const svg=document.getElementById('venn-svg'),host=document.getElementById('jvenn-container');
+  svg.replaceChildren();svg.style.display='';host.style.display='none';host.replaceChildren();
+  document.getElementById('click-result').value='';
+  const ids=['a','b','c','d'],sets=ids.map(getData),{regions,total}=fourRegions(sets);
+  const tbody=document.getElementById('region-tbody');tbody.replaceChildren();
+  document.getElementById('total-items').textContent=total;
+  const escapeHTML=text=>{const el=document.createElement('span');el.textContent=text;return el.innerHTML;};
+  const rgb=hex=>'rgb('+[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)).join(',')+')';
+  // jvenn supplies the classic four-ellipse geometry and region coordinates.
+  // Convert its output to our common SVG surface for consistent export/settings.
+  const existingStyles=new Set(document.querySelectorAll('style'));
+  try {
+    $(host).jvenn({series:sets.map((set,i)=>({name:String.fromCharCode(65+i),data:Array.from(set.items)})),
+      colors:sets.map(set=>rgb(set.color)),displayMode:'classic',displayStat:false,
+      exporting:false,shortNumber:false,fontFamily:'Arial, Venn DejaVu, Venn Source Han Sans',fontSize:document.getElementById('num-fs').value+'px'});
+    const source=host.querySelector('#canvasEllipse svg');
+    if(!source)throw new Error('jvenn 未生成图形');
+    const ns='http://www.w3.org/2000/svg';
+    if(document.getElementById('bg-enabled').checked){
+      const bg=document.createElementNS(ns,'rect');bg.setAttribute('width',500);bg.setAttribute('height',500);
+      bg.setAttribute('fill',document.getElementById('bg-color').value);bg.setAttribute('opacity',document.getElementById('bg-opacity').value);svg.append(bg);
+    }
+    const layer=document.createElementNS(ns,'g');layer.setAttribute('transform','translate(0 35)');svg.append(layer);
+    Array.from(source.children).forEach(child=>layer.append(child.cloneNode(true)));
+    const shapes=Array.from(layer.querySelectorAll('path')).filter(el=>el.getAttribute('fill')&&el.getAttribute('fill')!=='none');
+    shapes.slice(0,4).forEach((el,i)=>{el.setAttribute('fill',sets[i].color);el.setAttribute('fill-opacity',document.getElementById('opa-'+ids[i]).value);el.setAttribute('stroke','none');el.setAttribute('data-four-shape',String(i));});
+    // Draw borders above all fills, preserving jvenn's nested transforms.
+    // Non-scaling strokes prevent ellipse transforms from stretching the line.
+    if(document.getElementById('border-enabled').checked){
+      const borders=layer.cloneNode(true);borders.removeAttribute('transform');borders.setAttribute('class','four-borders');borders.setAttribute('pointer-events','none');
+      borders.querySelectorAll('path:not([data-four-shape])').forEach(el=>el.remove());
+      borders.querySelectorAll('path').forEach(el=>{el.setAttribute('fill','none');el.setAttribute('fill-opacity','0');el.setAttribute('stroke','#FFFFFF');el.setAttribute('stroke-opacity','1');el.setAttribute('stroke-width','3');el.setAttribute('vector-effect','non-scaling-stroke');});
+      layer.append(borders);
+    }
+    function textAt(node,text,size,color){
+      const el=document.createElementNS(ns,'text');el.textContent=text;
+      el.setAttribute('x',parseFloat(node.style.left));el.setAttribute('y',parseFloat(node.style.top)+Number(size));
+      el.setAttribute('font-family','Arial, Venn DejaVu, Venn Source Han Sans');el.setAttribute('font-size',size);el.setAttribute('fill',color);layer.append(el);return el;
+    }
+    sets.forEach((set,i)=>{const node=host.querySelector('#label'+(i+1));const label=textAt(node,set.name,document.getElementById('title-fs').value,set.color);if(i>=2)label.setAttribute('text-anchor','end');label.setAttribute('x',i===3?490:i===2?410:parseFloat(node.style.left));});
+    for(let mask=1;mask<16;mask++){
+      const bits=ids.map((_,i)=>mask&(1<<i)?'1':'0').join('')+'00';
+      const node=host.querySelector('#resultC'+bits),items=regions[mask];
+      const members=sets.filter((_,i)=>mask&(1<<i)).map(set=>set.name);
+      const key='four-'+mask,label=members.join(' ∩ ')+(mask===15?'':'（不含其他集合）');
+      const show=()=>{document.getElementById('click-result').value=label+'\n'+items.join('\n');};
+      const t=textAt(node,String(items.length),document.getElementById('num-fs').value,regionColors[key]||'#222222');
+      t.setAttribute('data-region',key);t.style.cursor='pointer';t.setAttribute('tabindex','0');t.setAttribute('role','button');t.setAttribute('aria-label',label+'：'+items.length+' 个元素');t.onclick=show;t.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}};
+      addRegionRow(tbody,key,escapeHTML(label),items.length,items);tbody.lastElementChild.style.cursor='pointer';tbody.lastElementChild.onclick=e=>{if(e.target.tagName!=='INPUT')show();};
+    }
+  } catch(error) {document.getElementById('click-result').value='四集合绘图失败：'+error.message;}
+  finally {host.replaceChildren();document.querySelectorAll('style').forEach(el=>{if(!existingStyles.has(el))el.remove();});}
+}
+
+function update() { draw(); }
+
+function getLayout3() {
+  return document.querySelector('input[name="layout3"]:checked')?.value || 'triangle';
+}
+
+function toggleMode() {
+  const mode = getMode();
+  document.getElementById('set-c-group').style.display = (mode === 3 || mode === 4) ? '' : 'none';
+  document.getElementById('set-d-group').style.display = mode === 4 ? '' : 'none';
+  document.getElementById('layout-3-group').style.display = mode === 3 ? '' : 'none';
+  if (mode === 4) {
+    document.getElementById('venn-svg').style.display = 'none';
+    document.getElementById('jvenn-container').style.display = '';
+  } else {
+    document.getElementById('venn-svg').style.display = '';
+    document.getElementById('jvenn-container').style.display = 'none';
+  }
+  update();
+}
+
+function clearAll() {
+  document.querySelectorAll('textarea').forEach(t => t.value = '');
+  document.getElementById('name-a').value = '集合 A';
+  document.getElementById('name-b').value = '集合 B';
+  document.getElementById('name-c').value = '集合 C';
+  document.getElementById('name-d').value = '集合 D';
+  document.getElementById('color-a').value = '#667eea';
+  document.getElementById('color-b').value = '#f093fb';
+  document.getElementById('color-c').value = '#4ecdc4';
+  document.getElementById('color-d').value = '#ffa07a';
+  document.getElementById('title-fs').value = '16';
+  document.getElementById('num-fs').value = '14';
+  document.getElementById('opa-a').value = '0.75';
+  document.getElementById('opa-lbl-a').textContent = '75%';
+  document.getElementById('opa-b').value = '0.75';
+  document.getElementById('opa-lbl-b').textContent = '75%';
+  document.getElementById('opa-c').value = '0.75';
+  document.getElementById('opa-lbl-c').textContent = '75%';
+  document.getElementById('opa-d').value = '0.75';
+  document.getElementById('opa-lbl-d').textContent = '75%';
+  document.getElementById('bg-opacity').value = '1';
+  document.getElementById('bg-opacity-label').textContent = '100%';
+  document.getElementById('border-enabled').checked = true;
+  Object.keys(regionColors).forEach(k => delete regionColors[k]);
+  document.querySelector('input[name="layout3"][value="triangle"]').checked = true;
+  update();
+}
+
+function exportSVG() {
+  closeExportMenu();
+  const svg = document.getElementById('venn-svg');
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const blob = new Blob([clone.outerHTML], { type: 'image/svg+xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'venn-diagram.svg';
+  a.click();
+}
+
+function exportPNG() {
+  closeExportMenu();
+  const svg = document.getElementById('venn-svg');
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  const canvas = document.createElement('canvas');
+  const scale = 2;
+  canvas.width = 500 * scale;
+  canvas.height = 500 * scale;
+  const ctx = canvas.getContext('2d');
+  if (document.getElementById('bg-enabled').checked) {
+    ctx.globalAlpha = parseFloat(document.getElementById('bg-opacity').value);
+    ctx.fillStyle = document.getElementById('bg-color').value;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  const img = new Image();
+  const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  img.onload = () => {
+    ctx.globalAlpha = 1;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(pngBlob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(pngBlob);
+      a.download = 'venn-diagram.png';
+      a.click();
+    }, 'image/png');
+  };
+  img.src = url;
+}
+
+function exportPDF() {
+  closeExportMenu();
+  const svg = document.getElementById('venn-svg');
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  const html = `<html><head><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh}svg{width:500px;height:500px}</style></head><body>${svgStr}</body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
+function encodeTIFF(imageData, w, h) {
+  const data = imageData.data;
+  const rowBytes = w * 3;
+  const pixelBytes = rowBytes * h;
+  const pixelOffset = 176;
+  const buf = new ArrayBuffer(pixelOffset + pixelBytes);
+  const dv = new DataView(buf);
+
+  dv.setUint16(0, 0x4949, true);
+  dv.setUint16(2, 42, true);
+  dv.setUint32(4, 8, true);
+
+  dv.setUint16(8, 11, true);
+  // 1: ImageWidth
+  dv.setUint16(10, 256, true); dv.setUint16(12, 4, true); dv.setUint32(14, 1, true); dv.setUint32(18, w, true);
+  // 2: ImageLength
+  dv.setUint16(22, 257, true); dv.setUint16(24, 4, true); dv.setUint32(26, 1, true); dv.setUint32(30, h, true);
+  // 3: BitsPerSample
+  dv.setUint16(34, 258, true); dv.setUint16(36, 3, true); dv.setUint32(38, 3, true); dv.setUint32(42, 146, true);
+  // 4: Compression
+  dv.setUint16(46, 259, true); dv.setUint16(48, 3, true); dv.setUint32(50, 1, true); dv.setUint32(54, 1, true);
+  // 5: PhotometricInterpretation
+  dv.setUint16(58, 262, true); dv.setUint16(60, 3, true); dv.setUint32(62, 1, true); dv.setUint32(66, 2, true);
+  // 6: StripOffsets
+  dv.setUint16(70, 273, true); dv.setUint16(72, 4, true); dv.setUint32(74, 1, true); dv.setUint32(78, pixelOffset, true);
+  // 7: SamplesPerPixel
+  dv.setUint16(82, 277, true); dv.setUint16(84, 3, true); dv.setUint32(86, 1, true); dv.setUint32(90, 3, true);
+  // 8: RowsPerStrip
+  dv.setUint16(94, 278, true); dv.setUint16(96, 4, true); dv.setUint32(98, 1, true); dv.setUint32(102, h, true);
+  // 9: StripByteCounts
+  dv.setUint16(106, 279, true); dv.setUint16(108, 4, true); dv.setUint32(110, 1, true); dv.setUint32(114, pixelBytes, true);
+  // 10: XResolution
+  dv.setUint16(118, 282, true); dv.setUint16(120, 5, true); dv.setUint32(122, 1, true); dv.setUint32(126, 152, true);
+  // 11: YResolution
+  dv.setUint16(130, 283, true); dv.setUint16(132, 5, true); dv.setUint32(134, 1, true); dv.setUint32(138, 160, true);
+  dv.setUint32(142, 0, true);
+
+  dv.setUint16(146, 8, true); dv.setUint16(148, 8, true); dv.setUint16(150, 8, true);
+  dv.setUint32(152, 72, true); dv.setUint32(156, 1, true);
+  dv.setUint32(160, 72, true); dv.setUint32(164, 1, true);
+  dv.setUint32(168, pixelOffset, true);
+  dv.setUint32(172, pixelBytes, true);
+
+  let off = pixelOffset;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const s = (y * w + x) * 4;
+      dv.setUint8(off++, data[s]);
+      dv.setUint8(off++, data[s + 1]);
+      dv.setUint8(off++, data[s + 2]);
+    }
+  }
+  return buf;
+}
+
+function exportTIFF() {
+  closeExportMenu();
+  const svg = document.getElementById('venn-svg');
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  const canvas = document.createElement('canvas');
+  const scale = 2;
+  canvas.width = 500 * scale;
+  canvas.height = 500 * scale;
+  const ctx = canvas.getContext('2d');
+  if (document.getElementById('bg-enabled').checked) {
+    ctx.globalAlpha = parseFloat(document.getElementById('bg-opacity').value);
+    ctx.fillStyle = document.getElementById('bg-color').value;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  const img = new Image();
+  const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  img.onload = () => {
+    ctx.globalAlpha = 1;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const tiffData = encodeTIFF(imageData, canvas.width, canvas.height);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([tiffData], { type: 'image/tiff' }));
+    a.download = 'venn-diagram.tiff';
+    a.click();
+  };
+  img.src = url;
+}
+
+function toggleExportMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('export-menu');
+  const open=menu.classList.toggle('show');
+  document.getElementById('export-trigger').setAttribute('aria-expanded',String(open));
+}
+
+function closeExportMenu() {
+  document.getElementById('export-menu')?.classList.remove('show');
+  document.getElementById('export-trigger')?.setAttribute('aria-expanded','false');
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeExportMenu();});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.export-group')) closeExportMenu();
+});
+
+function addRegionRow(tbody, key, label, count, items) {
+  const row = document.createElement('tr');
+  const ci = document.createElement('input');
+  ci.type = 'color';
+  ci.value = regionColors[key] || '#1a1a2e';
+  ci.style.cssText = 'width:22px;height:22px;padding:0;border:none;border-radius:4px;cursor:pointer;vertical-align:middle;margin-right:6px';
+  ci.oninput = () => {
+    regionColors[key] = ci.value;
+    document.querySelectorAll('#venn-svg [data-region="' + key + '"]').forEach(function(el) { el.setAttribute('fill', ci.value); });
+  };
+  ci.onchange = function() { update(); };
+  const lc = document.createElement('td');
+  lc.appendChild(ci);
+  lc.insertAdjacentHTML('beforeend', ' ' + label);
+  row.appendChild(lc);
+  const cc = document.createElement('td');
+  cc.innerHTML = `<span class="count">(${count})</span>`;
+  row.appendChild(cc);
+  tbody.appendChild(row);
+}
+
+// ── Storage ──
+const STORAGE_KEY = 'venn_saved';
+
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+}
+
+function saveEntry() {
+  const mode = getMode();
+  const data = {
+    id: Date.now(),
+    name: document.getElementById('save-name').value.trim() || '未命名 ' + new Date().toLocaleString('zh-CN'),
+    ts: Date.now(),
+    mode: mode,
+    nameA: document.getElementById('name-a').value,
+    nameB: document.getElementById('name-b').value,
+    colorA: document.getElementById('color-a').value,
+    colorB: document.getElementById('color-b').value,
+    itemsA: document.getElementById('items-a').value,
+    itemsB: document.getElementById('items-b').value,
+    titleFs: document.getElementById('title-fs').value,
+    numFs: document.getElementById('num-fs').value,
+    opaA: document.getElementById('opa-a').value,
+    opaB: document.getElementById('opa-b').value,
+    bgEnabled: document.getElementById('bg-enabled').checked,
+    bgColor: document.getElementById('bg-color').value,
+    bgOpacity: document.getElementById('bg-opacity').value,
+    borderEnabled: document.getElementById('border-enabled').checked,
+    regionColors: {...regionColors},
+  };
+  if (mode === 3) {
+    data.layout3 = getLayout3();
+    data.nameC = document.getElementById('name-c').value;
+    data.colorC = document.getElementById('color-c').value;
+    data.itemsC = document.getElementById('items-c').value;
+    data.opaC = document.getElementById('opa-c').value;
+  }
+  if (mode === 4) {
+    data.nameC = document.getElementById('name-c').value;
+    data.colorC = document.getElementById('color-c').value;
+    data.itemsC = document.getElementById('items-c').value;
+    data.opaC = document.getElementById('opa-c').value;
+    data.nameD = document.getElementById('name-d').value;
+    data.colorD = document.getElementById('color-d').value;
+    data.itemsD = document.getElementById('items-d').value;
+    data.opaD = document.getElementById('opa-d').value;
+  }
+  const list = getSaved();
+  list.unshift(data);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  document.getElementById('save-name').value = '';
+  renderSavedList();
+}
+
+function loadEntry(id) {
+  const list = getSaved();
+  const data = list.find(e => e.id === id);
+  if (!data) return;
+  const mode = data.mode || 2;
+  document.querySelector(`input[name="mode"][value="${mode}"]`).checked = true;
+  document.getElementById('set-c-group').style.display = (mode === 3 || mode === 4) ? '' : 'none';
+  document.getElementById('set-d-group').style.display = mode === 4 ? '' : 'none';
+  document.getElementById('layout-3-group').style.display = mode === 3 ? '' : 'none';
+  if (mode === 4) {
+    document.getElementById('venn-svg').style.display = 'none';
+    document.getElementById('jvenn-container').style.display = '';
+  } else {
+    document.getElementById('venn-svg').style.display = '';
+    document.getElementById('jvenn-container').style.display = 'none';
+  }
+  document.getElementById('name-a').value = data.nameA;
+  document.getElementById('name-b').value = data.nameB;
+  document.getElementById('color-a').value = data.colorA;
+  document.getElementById('color-b').value = data.colorB;
+  document.getElementById('items-a').value = data.itemsA;
+  document.getElementById('items-b').value = data.itemsB;
+  document.getElementById('title-fs').value = data.titleFs || '16';
+  document.getElementById('num-fs').value = data.numFs || '14';
+  const opaA = data.opaA || '0.75';
+  document.getElementById('opa-a').value = opaA;
+  document.getElementById('opa-lbl-a').textContent = Math.round(parseFloat(opaA) * 100) + '%';
+  const opaB = data.opaB || '0.75';
+  document.getElementById('opa-b').value = opaB;
+  document.getElementById('opa-lbl-b').textContent = Math.round(parseFloat(opaB) * 100) + '%';
+  if (mode === 3) {
+    const layout = data.layout3 || 'triangle';
+    document.querySelector(`input[name="layout3"][value="${layout}"]`).checked = true;
+    document.getElementById('name-c').value = data.nameC || '集合 C';
+    document.getElementById('color-c').value = data.colorC || '#4ecdc4';
+    document.getElementById('items-c').value = data.itemsC || '';
+    const opaC = data.opaC || '0.75';
+    document.getElementById('opa-c').value = opaC;
+    document.getElementById('opa-lbl-c').textContent = Math.round(parseFloat(opaC) * 100) + '%';
+  }
+  if (mode === 4) {
+    document.getElementById('name-c').value = data.nameC || '集合 C';
+    document.getElementById('color-c').value = data.colorC || '#4ecdc4';
+    document.getElementById('items-c').value = data.itemsC || '';
+    const opaC = data.opaC || '0.75';
+    document.getElementById('opa-c').value = opaC;
+    document.getElementById('opa-lbl-c').textContent = Math.round(parseFloat(opaC) * 100) + '%';
+    document.getElementById('name-d').value = data.nameD || '集合 D';
+    document.getElementById('color-d').value = data.colorD || '#ffa07a';
+    document.getElementById('items-d').value = data.itemsD || '';
+    const opaD = data.opaD || '0.75';
+    document.getElementById('opa-d').value = opaD;
+    document.getElementById('opa-lbl-d').textContent = Math.round(parseFloat(opaD) * 100) + '%';
+  }
+  document.getElementById('bg-enabled').checked = data.bgEnabled;
+  document.getElementById('bg-color').value = data.bgColor || '#ffffff';
+  const opacity = data.bgOpacity || '1';
+  document.getElementById('bg-opacity').value = opacity;
+  document.getElementById('bg-opacity-label').textContent = Math.round(parseFloat(opacity) * 100) + '%';
+  document.getElementById('border-enabled').checked = data.borderEnabled !== false;
+  Object.keys(regionColors).forEach(k => delete regionColors[k]);
+  if (data.regionColors) Object.assign(regionColors, data.regionColors);
+  update();
+}
+
+function deleteEntry(id) {
+  let list = getSaved();
+  list = list.filter(e => e.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  renderSavedList();
+}
+
+function renderSavedList() {
+  const container = document.getElementById('saved-list');
+  const list = getSaved();
+  if (list.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = list.map(e => {
+    const time = new Date(e.ts).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    return `<div class="saved-item" onclick="loadEntry(${e.id})">
+      <span class="name">${e.name}</span>
+      <span class="time">${time}</span>
+      <span class="del" onclick="event.stopPropagation();deleteEntry(${e.id})">✕</span>
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => { update(); renderSavedList(); });
+</script>
+</body>
+</html>

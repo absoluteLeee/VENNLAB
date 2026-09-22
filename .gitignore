@@ -1,0 +1,8 @@
+node_modules/
+.browser-check*/
+_verify.html
+_check-*.html
+*.log
+.env*
+dist/
+*.zip
